@@ -54,13 +54,13 @@ client.on('message', message => {
               .setFooter("Cualquier duda o problema contactarse con RyZe", client.user.avatarURL())
               .setThumbnail(message.author.displayAvatarURL())
               .setTimestamp()
-              .addField("Comandos", "/contador* tiempo * : ,iniciar contador en minutos")
+              .addField("Comandos", "/contador* tiempo * : ,iniciar contador en minutos\n/equivalencias: lista de equivalencias y formula de milisegundos a minutos")
     
         message.channel.send({ embed: embedDatos });
     }
 
     //Lista de Milisegundos a Minutos
-    if (message.content === '/help'){
+    if (message.content === '/equivalencias'){
         const embedDatos = new Discord.MessageEmbed() 
               .setTitle("Tabla de equivalencias")
               .setColor(0x00AE86)
