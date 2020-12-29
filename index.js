@@ -23,15 +23,11 @@ client.on('message', message => {
     if (message.content === '/hola'){
         message.channel.send(`Hola ${message.author}`);
     }
-    //Informe solo para RyZe
+
     if (message.content === '/informe'){
-        if (message.author === 'RyZe'){
             message.channel.send(`Acá laburando para levantar el pais en ${client.guilds.cache.size} servers, con ${client.users.cache.size} usuarios`);
-        }
     }   
-    else{
-        message.reply('No posees el rol requerido para realizar este comando');
-    }
+    
     //Contador
     if (message.content.startsWith('/contador')){
         //Tomamos el los caracteres despues del comando y el espacio
