@@ -17,7 +17,7 @@ client.on('message', message => {
     //Receiving the message
     if (message.content === '/ping'){
         let ping = Math.floor(message.client.ws.ping);
-        message.channel.send('Pong,' + ping + 'ms');
+        message.channel.send('Pong, ' + ping + 'ms');
     }
 
     if (message.content === '/hola'){
@@ -27,7 +27,7 @@ client.on('message', message => {
     if (message.content === '/informe'){
             message.channel.send(`Acá laburando para levantar el pais en ${client.guilds.cache.size} servers, con ${client.users.cache.size} usuarios`);
     }   
-    
+
     //Contador
     if (message.content.startsWith('/contador')){
         //Tomamos el los caracteres despues del comando y el espacio
