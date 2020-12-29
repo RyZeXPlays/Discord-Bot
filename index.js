@@ -31,13 +31,13 @@ client.on('message', message => {
     //Contador
     if (message.content.startsWith('/contador')){
         //Tomamos el los caracteres despues del comando y el espacio
-        timeToWait = message.content.slice(10);
+        timeToWait = message.content.slice(10,3);
         //Comprobamos con isNan si no es un numero
         if (isNaN(timeToWait) == true){
             message.reply('Porfavor introduzca solo numeros luego del comando');
         }
         else{
-            setTimeout(contador,timeToWait);
+            setTimeout(contador,timeToWait * 60000);
             message.channel.send('Contador iniciado');
         }
     }
@@ -54,7 +54,7 @@ client.on('message', message => {
               .setFooter("Cualquier duda o problema contactarse con RyZe", client.user.avatarURL())
               .setThumbnail(message.author.displayAvatarURL())
               .setTimestamp()
-              .addField("Comandos", "/contador* tiempo * : ,iniciar contador con el tiempo en milisegundos ejemplo: 1seg = 1000")
+              .addField("Comandos", "/contador* tiempo * : ,iniciar contador en minutos")
     
         message.channel.send({ embed: embedDatos });
     }
