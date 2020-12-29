@@ -13,9 +13,7 @@ client.on('ready', () => {
 });
 
 client.on('message', message => {
-    //Comprobar roles
-    let rolDeveloper = message.guild.roles.cache.find(r => r.name === "BotDeveloper");
-   
+
     //Receiving the message
     if (message.content === '/ping'){
         let ping = Math.floor(message.client.ws.ping);
@@ -25,14 +23,14 @@ client.on('message', message => {
     if (message.content === '/hola'){
         message.channel.send(`Hola ${message.author}`);
     }
-    //Informe solo para el BotDeveloper
-    if(rolDeveloper){
-         if (message.content === '/informe'){
-         message.channel.send(`Acá laburando para levantar el pais en ${client.guilds.cache.size} servers, con ${client.users.cache.size} usuarios`)
+    //Informe solo para RyZe
+    if (message.content === '/informe'){
+        if (message.author === 'RyZe'){
+            message.channel.send(`Acá laburando para levantar el pais en ${client.guilds.cache.size} servers, con ${client.users.cache.size} usuarios`);
         }
-    }
+    }   
     else{
-        message.reply('No posees el rol requerido')
+        message.reply('No posees el rol requerido para realizar este comando');
     }
     //Contador
     if (message.content.startsWith('/contador')){
@@ -60,7 +58,7 @@ client.on('message', message => {
               .setFooter("Cualquier duda o problema contactarse con RyZe", client.user.avatarURL())
               .setThumbnail(message.author.displayAvatarURL())
               .setTimestamp()
-              .addField("Comandos", "/contador * tiempo * : comienza un contador que solo acepta numeros como dato, y el tiempo debve de estar establecido en milisegundos, ejemplo: 1seg = 1000")
+              .addField("Comandos", "/contador* tiempo * : ,iniciar contador con el tiempo en milisegundos ejemplo: 1seg = 1000")
     
         message.channel.send({ embed: embedDatos });
     }
