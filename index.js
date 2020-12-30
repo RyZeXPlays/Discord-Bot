@@ -67,7 +67,7 @@ client.on('message', message => {
               .setFooter("Cualquier duda o problema contactarse con RyZe", client.user.avatarURL())
               .setThumbnail(message.author.displayAvatarURL())
               .setTimestamp()
-              .addField("Equivalencias", "1 minuto = 60000\n10 minutos = 600000\n30 minutos = 1800000\n45 minutos = 2700000\n60 minutos = 3600000\nCulaquier otro minuto hagan, X * 60000")
+              .addField("Equivalencias", "1 minuto = 60000\n10 minutos = 600000\n30 minutos = 1800000\n45 minutos = 2700000\n60 minutos = 3600000\n3 horas = 10800000\nCulaquier otro minuto hagan, X * 60000")
     
         message.channel.send({ embed: embedDatos });
     }
