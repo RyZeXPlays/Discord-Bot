@@ -31,13 +31,12 @@ client.on('message', message => {
     //Contador
     if (message.content.startsWith('/contador')){
         //Tomamos el los caracteres despues del comando y el espacio
-        time = message.content.slice(10);
+        timeToWait = message.content.slice(10);
         //Comprobamos con isNan si no es un numero
-        if (isNaN(time) == true){
+        if (isNaN(timeToWait) == true){
             message.reply('Porfavor introduzca solo numeros luego del comando');
         }
         else{
-            timeToWait = time;
             setTimeout(contador,timeToWait);
             message.channel.send('Contador iniciado');
         }
