@@ -1,61 +1,117 @@
+const fs = require('fs');
 const Discord = require('discord.js');
+const { prefix, token } = require('./config.json');
+
 const client = new Discord.Client();
-const config = require("./config.json");
+client.commands = new Discord.Collection();
+const commandFiles = fs.readdirSync('./commands').filter(file => file.endsWith('.js'));
 
-const dadosImage = ["https://cdn.discordapp.com/attachments/684757256658747451/794277079243685888/dado-1.png", "https://cdn.discordapp.com/attachments/684757256658747451/794277107537805332/dado-2.png", "https://cdn.discordapp.com/attachments/684757256658747451/794277142800105483/dado-3.png", "https://cdn.discordapp.com/attachments/684757256658747451/794277176592826368/dado-4.png", "https://cdn.discordapp.com/attachments/684757256658747451/794277207619010590/dado-5.png", "https://cdn.discordapp.com/attachments/684757256658747451/794277245157113866/dado-6.png"]
-
-let prefix = config.prefix;
-
-function numero_al_azar(minimo,maximo){
-    return Math.floor(Math.random() * (maximo - minimo + 1) + minimo); 
+//Filtra los archivos de la carpeta commands como comandos
+for (const file of commandFiles) {
+	const command = require(`./commands/${file}`);
+	client.commands.set(command.name, command);
 }
 
+const cooldowns = new Discord.Collection();
+
+
+//Cuando se inicia el cliente
 client.on('ready', () => {
-     console.log(`Bot is ready as ${client.user.tag}, conectado en ${client.guilds.cache.size} servidores, con ${client.users.cache.size} usuarios en total`);
-     client.user.setPresence( {
-        activity: {
-            name: `/help | Estoy en ${client.guilds.cache.size} servidores, genial no?.`,
-            type: "WATCHING"
-        },
-        status: "online"
-     });
+    console.log(`Bot is ready as ${client.user.tag}, conectado en ${client.guilds.cache.size} servidores, con ${client.users.cache.size} usuarios usandome en total`);
+    client.user.setPresence( {
+       activity: {
+           name: `/help | Estoy en ${client.guilds.cache.size} servidores, genial no?.`,
+           type: "WATCHING"
+       },
+       status: "online"
+    });
 });
 
+client.on("guildMemberAdd", member => {
+    let channel = client.channels.cache.get('808555753921052682');
+    channel.send(`Bienvenido ${member.user} al servidor ${member.guild.name}, que la pases bien!`);
+});
 
-client.on('message', (message) => {
-    //Evitar la respuestas entre bots
-    if (!message.content.startsWith(prefix)) return; 
-    if (message.author.bot) return;
+//Al recibir mensajes
+client.on('message', message => {
+	if (!message.content.startsWith(prefix) || message.author.bot) return;
 
-    const args = message.content.slice(prefix.length).split(/ +/g);
-    const command = args.shift().toLowerCase();
+	const args = message.content.slice(prefix.length).split(/ +/);
+    const commandName = args.shift().toLowerCase();
 
-    //Roles
-    let rol = message.guild.roles.cache.find(r => r.name === "BotDeveloper");
-    let permiso = message.member.hasPermission("ADMINISTRATOR");
-    //Rol admin en el server Ghouls
-    let rolAdmin = message.guild.roles.cache.find(r => r.name === "Admin")
+    const command = client.commands.get(commandName) || client.commands.find(cmd => cmd.aliases && cmd.aliases.includes(commandName));
+    if (!command) return;
 
-    if (command === "informe"){
-        if (rol || permiso || rolAdmin){
-            message.channel.send(`Acá laburando para levantar el pais en ${client.guilds.cache.size} servers, con ${client.users.cache.size} usuarios`);
+    //Comandos con permisos
+    if (command.permissions) {
+        const authorPerms = message.channel.permissionsFor(message.author);
+        if (!authorPerms || !authorPerms.has(command.permissions)) {
+         	return message.reply('No tienes permisos para hacer esto!');
         }
     }
 
-    //Eliminacion masiva de mensajes
-    if (command === "purge"){
-        if (rol || permiso || rolAdmin){
-            let cantidad = parseInt(args[0]);
-            message.channel.bulkDelete(cantidad);
-            if (!cantidad){message.channel.send("No ingresó la cantidad")}
-        }
+    //Para comandos con argumentos, te dice cual es el uso adecuado
+    if (command.args && !args.length) {
+        let reply = `No proporcionaste ningún argumento, ${message.author}!`;
+
+		if (command.usage) {
+			reply += `\nEl uso adecuado sería: \`${prefix}${command.name} ${command.usage}\``;
+		}
+
+		return message.channel.send(reply);
     }
 
-    //Comprobar respuesta y tiempo de respuesta del bot
-    if(command === "ping"){
-        let ping = Math.floor(message.client.ws.ping);
-        message.channel.send('Pong :ping_pong:, ' + ping + 'ms');
+    //Cooldown
+    if (!cooldowns.has(command.name)) {
+        cooldowns.set(command.name, new Discord.Collection());
     }
+    
+    const now = Date.now();
+    const timestamps = cooldowns.get(command.name);
+    const cooldownAmount = (command.cooldown || 3) * 1000;
+    
+    if (timestamps.has(message.author.id)) {
+        const expirationTime = timestamps.get(message.author.id) + cooldownAmount;
+
+	    if (now < expirationTime) {
+		    const timeLeft = (expirationTime - now) / 1000;
+		    return message.reply(`Profavor espere ${timeLeft.toFixed(1)} segundos mas antes de volver a utilizar el comando \`${command.name}\` :stopwatch: `);
+	    }
+    }
+    timestamps.set(message.author.id, now);
+    setTimeout(() => timestamps.delete(message.author.id), cooldownAmount);
+
+    try {
+	    command.execute(message, args);
+    } 
+    catch (error) {
+	    console.error(error);
+	    message.reply('Hubo un error ejecutando ese comando');
+    }
+});
+
+//Log para un canal determinado, cuando eliminan un mensaje
+client.on("messageDelete", async message => {
+    if (!message.guild) return;
+	const fetchedLogs = await message.guild.fetchAuditLogs({
+		limit: 1,
+		type: 'MESSAGE_DELETE',
+	});
+
+    const deletionLog = fetchedLogs.entries.first();
+    const { executor, target } = deletionLog;
+    let canal = client.channels.cache.get('808529006176895020'); 
+
+    if (target.id === message.author.id) {
+		canal.send(`Un mensaje hecho por **${message.author.tag}** con el contenido: \`${message}\` fue eliminado por **${executor.tag}**.`);
+	}	else {
+		canal.send(`Un mensaje hecho por **${message.author.tag}** con el contenido: \`${message}\` fue eliminado por mi o por el autor del mensaje`);
+	}
+});
+
+client.login(token);
+
+/*
 
     //Contador
     if (command === "contador"){
@@ -73,87 +129,7 @@ client.on('message', (message) => {
     function contador() {
         message.reply('Ya puedes tirar de la ruleta'); 
     }
-    
-    //Comando ayuda
-    if (command === "help"){
-        const embedDatos = new Discord.MessageEmbed() 
-              .setTitle("Ayuda")
-              .setColor("RANDOM")
-              .setFooter("Cualquier duda o problema contactarse con RyZe", client.user.avatarURL())
-              .setThumbnail(message.author.displayAvatarURL())
-              .setTimestamp()
-              .setDescription("Agregue el prefijo `/` antes de cualquier comando")
-              .addField("Comandos", "`contador 'tiempo':` iniciar contador en milisegundos.\n`equivalencias:` lista de equivalencias y formula de milisegundos a minutos.\n`8ball: 'Pregunta':` Haga una pregunta y el bot respondera.\n`random:` genera un numero aleatorio comprendido entre 0 y 100.\n`say 'Texto'`: manda un mensaje utilizando al bot como emisor de este.\n`dice:` Tira un dado de 6 caras")
-    
-        message.channel.send({ embed: embedDatos });
-    }
-
-    //Lista de Milisegundos a Minutos
-    if (command === "equivalencias"){
-        const embedDatos = new Discord.MessageEmbed() 
-              .setTitle("Tabla de equivalencias")
-              .setColor("RANDOM")
-              .setFooter("Cualquier duda o problema contactarse con RyZe", client.user.avatarURL())
-              .setThumbnail(message.author.displayAvatarURL())
-              .setTimestamp()
-              .addField("Equivalencias", "1 minuto = 60000\n10 minutos = 600000\n30 minutos = 1800000\n45 minutos = 2700000\n60 minutos = 3600000\n3 horas = 10800000\nCulaquier otro minuto hagan, X * 60000")
-    
-        message.channel.send({ embed: embedDatos });
-    }
-    
-    //Comando 8ball
-    if (command === "8ball"){
-        var rpts = ["Si­", "No", "Tal Vez", "Nunca", "No lo se", "Muy poco probable", "Ambos sabemos que no", "100.000% seguro que si", "Te diría que no pero la verdad es que si"]; // Las Respuestas
-        let question = message.content;
-
-        let pregunt = question.slice(6); //Si falta la pregunta
-        if(!pregunt) return message.channel.send(':x: | Falta la pregunta.');
-            
-        const embed = new Discord.MessageEmbed() //Creamos el embed
-            .setTitle(':8ball: Command | 8Ball')
-            .setThumbnail(message.author.avatarURL)
-            .addField('Su Pregunta:', pregunt)
-            .addField('Mi respuesta es:', rpts[Math.floor(Math.random() * rpts.length)])
-            .setColor("RANDOM")
-
-        message.channel.send(embed);
-    }
-
-    //Numero aleatorio
-    if (command === "random"){
-        let randomN = numero_al_azar(0,100);
-        message.channel.send(`El numero es ${randomN}`);
-    }
-
-    //Say
-    if (command === "say"){
-        let msg = message.content.slice(5)
-        message.channel.send(msg);
-        message.delete();
-    }
-
-    //Tirar dados
-    if (command === "dice"){
-        var dado = dadosImage[Math.floor(Math.random() * dadosImage.length)]
-        const embedDice = new Discord.MessageEmbed()
-        .setTitle(`${message.author.username} ha tirado el dado.`)
-        .setDescription("El dado a caido en:")
-        .setImage(dado)
-        .setColor("RANDOM")
-        message.channel.send(embedDice);
-    }
-});
-
-client.login(config.token);
-
-
-
-
-
-
-
-
-
+});*/
 
     
 /* Ejemplo de collector
