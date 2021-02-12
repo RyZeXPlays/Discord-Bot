@@ -18,10 +18,10 @@ module.exports = {
             .setThumbnail(message.author.avatarURL())
             .setAuthor(message.author.username, message.author.avatarURL())
             .setTimestamp()
-            .setDescription(`Aquí una lista de todos mis comandos:\n\n\`${data}\`\n\nPuedes mandar \`${prefix}help [command name]\` para tener informacion sobre un comando en específico!`)
+            .setDescription(`Aquí una lista de todos mis comandos:\n\n\`${data}\`\n\nPuedes usar \`${prefix}help [command name]\` para tener informacion sobre un comando en específico!`)
             .setColor("PURPLE")
 
-        message.channel.send(embed);
+        return message.channel.send(embed);
         }
 
         const name = args.shift().toLowerCase();

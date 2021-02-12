@@ -9,7 +9,7 @@ module.exports = {
           }
           
           if(!message.member.permissionsIn(message.channel).has('MANAGE_MESSAGES')){
-            return message.channel.send('Perdon, pero no tienes permisos para hacer esto');
+            return message.reply('Perdon, pero no tienes permisos para hacer esto');
           }
           
           if(!args) return message.channel.send('Escriba la cantidad de mensajes a eliminar');

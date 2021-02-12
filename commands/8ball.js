@@ -5,8 +5,8 @@ module.exports = {
     colldown: 0.1,
     usage: "[question]",
     async execute(message, args){
-        if (!args){
-            message.channel.send(":x: | Falta la pregunta.");
+        if (!args[0]){
+            message.reply(":x: | Falta la pregunta.");
             return;
         }
         

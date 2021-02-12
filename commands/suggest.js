@@ -10,6 +10,7 @@ module.exports = {
         let channel = message.guild.channels.resolve('808538641813995571');
         let sugerencia = args.join(' ');
 
+        try{
         const embed = new Discord.MessageEmbed() 
         .setTitle(':envelope_with_arrow: Command | Suggest')
         .setThumbnail(message.author.avatarURL())
@@ -18,6 +19,9 @@ module.exports = {
         .setDescription(`Sugerencia:\n${sugerencia}`)
         .setColor("PURPLE")
 
-    channel.send(embed);
+        channel.send(embed);
+        }catch(e){
+            console.log("No existe el canal");
+        }
     },
 }

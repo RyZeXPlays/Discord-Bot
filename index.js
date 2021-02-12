@@ -17,7 +17,7 @@ const cooldowns = new Discord.Collection();
 
 //Cuando se inicia el cliente
 client.on('ready', () => {
-    console.log(`Bot is ready as ${client.user.tag}, conectado en ${client.guilds.cache.size} servidores, con ${client.users.cache.size} usuarios usandome en total`);
+    console.log(`Bot is ready as ${client.user.tag}, conectado en ${client.guilds.cache.size} servidores, con ${client.users.cache.size} usuarios utilizandome en total`);
     client.user.setPresence( {
        activity: {
            name: `/help | Estoy en ${client.guilds.cache.size} servidores, genial no?.`,
@@ -27,6 +27,7 @@ client.on('ready', () => {
     });
 });
 
+//Bienvenida al servidor
 client.on("guildMemberAdd", member => {
     let channel = client.channels.cache.get('808555753921052682');
     channel.send(`Bienvenido ${member.user} al servidor ${member.guild.name}, que la pases bien!`);
@@ -34,7 +35,27 @@ client.on("guildMemberAdd", member => {
 
 //Al recibir mensajes
 client.on('message', message => {
-	if (!message.content.startsWith(prefix) || message.author.bot) return;
+	if (message.author.bot) return;
+    
+/*    //Filtro de palabras
+    let words = ["puto", "gay"]
+    
+    let messageContent = message.content.toLowerCase();
+    if(words.some(word => messageContent.includes(word))) {
+        if (message.author.id === '473855828844216320') return;
+        message.delete()
+        .then(() => message.channel.send(`${message.author} con esa boquita le hablas a tu mama?`))
+        return;
+    }*/
+    function rpghunt(){
+        message.reply("Time for **RPG HUNT**")
+    }
+    if (message.content === "rpg hunt" || message.content === "Rpg hunt"){
+        setTimeout(rpghunt,45000);
+    }
+    
+    //Comienzo de Commands 
+    if (!message.content.startsWith(prefix)) return;
 
 	const args = message.content.slice(prefix.length).split(/ +/);
     const commandName = args.shift().toLowerCase();
@@ -92,6 +113,7 @@ client.on('message', message => {
 
 //Log para un canal determinado, cuando eliminan un mensaje
 client.on("messageDelete", async message => {
+    if (message.author.bot) return;
     if (!message.guild) return;
 	const fetchedLogs = await message.guild.fetchAuditLogs({
 		limit: 1,
@@ -100,13 +122,18 @@ client.on("messageDelete", async message => {
 
     const deletionLog = fetchedLogs.entries.first();
     const { executor, target } = deletionLog;
-    let canal = client.channels.cache.get('808529006176895020'); 
+    let guild = message.guild;
+    let canal = guild.channels.cache.get('808529006176895020'); 
 
-    if (target.id === message.author.id) {
-		canal.send(`Un mensaje hecho por **${message.author.tag}** con el contenido: \`${message}\` fue eliminado por **${executor.tag}**.`);
-	}	else {
-		canal.send(`Un mensaje hecho por **${message.author.tag}** con el contenido: \`${message}\` fue eliminado por mi o por el autor del mensaje`);
-	}
+    try{
+        if (target.id === message.author.id) {
+		    canal.send(`Un mensaje hecho por **${message.author.tag}** con el contenido: \`${message}\` fue eliminado por **${executor.tag}**.`);
+	    }else {
+		    canal.send(`Un mensaje hecho por **${message.author.tag}** con el contenido: \`${message}\` fue eliminado por mi o por el autor del mensaje`);
+	    }
+    }catch(e){
+        console.log("No existe ese canal");
+    }
 });
 
 client.login(token);
@@ -138,13 +165,9 @@ client.login(token);
         const collector = message.channel.createMessageCollector(filter, { time: 15000 });
         
         collector.on('collect', m => {
-            if (m.content === 'yes'){
-                Asnwered = true;
+  
         
         collector.on('end', collected => {
-            if (Asnwered == true){
-                return;
-            }
-            else{message.reply("Se acabó el tiempo")}
+            message.reply("Se acabó el tiempo");
         });
     }*/
