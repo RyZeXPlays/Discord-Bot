@@ -38,7 +38,7 @@ client.on('message', message => {
 	if (message.author.bot) return;
     
 /*    //Filtro de palabras
-    let words = ["puto", "gay"]
+    let words = ["hola", "chau"]
     
     let messageContent = message.content.toLowerCase();
     if(words.some(word => messageContent.includes(word))) {
@@ -47,12 +47,6 @@ client.on('message', message => {
         .then(() => message.channel.send(`${message.author} con esa boquita le hablas a tu mama?`))
         return;
     }*/
-    function rpghunt(){
-        message.reply("Time for **RPG HUNT**")
-    }
-    if (message.content === "rpg hunt" || message.content === "Rpg hunt"){
-        setTimeout(rpghunt,45000);
-    }
     
     //Comienzo de Commands 
     if (!message.content.startsWith(prefix)) return;
@@ -137,37 +131,3 @@ client.on("messageDelete", async message => {
 });
 
 client.login(token);
-
-/*
-
-    //Contador
-    if (command === "contador"){
-        //Tomamos el los caracteres despues del comando y el espacio
-        timeToWait = message.content.slice(10);
-        //Comprobamos con isNan si no es un numero
-        if (isNaN(timeToWait) == true){
-            message.reply('Porfavor introduzca solo numeros luego del comando');
-        }
-        else{
-            setTimeout(contador,timeToWait);
-            message.channel.send('Contador iniciado');
-        }
-    }
-    function contador() {
-        message.reply('Ya puedes tirar de la ruleta'); 
-    }
-});*/
-
-    
-/* Ejemplo de collector
-
-        const filter = m => m.content === 'yes' || m.content === 'no' && m.author.id === message.author.id;
-        const collector = message.channel.createMessageCollector(filter, { time: 15000 });
-        
-        collector.on('collect', m => {
-  
-        
-        collector.on('end', collected => {
-            message.reply("Se acabó el tiempo");
-        });
-    }*/
